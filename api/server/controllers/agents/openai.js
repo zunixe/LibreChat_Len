@@ -139,6 +139,30 @@ const OpenAIChatCompletionController = async (req, res) => {
   const request = validation.request;
   const agentId = request.model;
 
+  // 🔒 VALIDASI BERDASARKAN ROLE
+const userRole = req.user?.role;
+
+  // mapping role → model
+  const ROLE_MODEL_ACCESS = {
+    financial_user: ["financial"],   // 👈 hanya ini
+    USER: ["financial", "risk", "LenO Bot"],   // 👈 hanya ini
+    ADMIN: ["financial", "risk", "LenO Bot"] // bebas
+
+  };
+
+  const allowedModels = ROLE_MODEL_ACCESS[userRole];
+
+  // kalau role ada tapi model tidak diizinkan
+  if (allowedModels && !allowedModels.includes(agentId)) {
+    return sendErrorResponse(
+      res,
+      403,
+      `Access denied: model "${agentId}" not allowed for role "${userRole}"`,
+      "permission_error",
+      "access_denied"
+    );
+  }
+
   // Look up the agent
   const agent = await db.getAgent({ id: agentId });
   if (!agent) {

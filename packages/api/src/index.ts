@@ -47,6 +47,8 @@ export * from './web';
 export * from './cache';
 /* Stream */
 export * from './stream';
+/* Admin */
+export * from './admin';
 /* Diagnostics */
 export { memoryDiagnostics } from './utils/memory';
 /* types */

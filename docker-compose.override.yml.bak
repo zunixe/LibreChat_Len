@@ -1,0 +1,55 @@
+# Docker Compose Override for LibreChat with Local vLLM + OCR Support
+
+services:
+  api:
+    ports:
+      - "3080:3080"
+    volumes:
+      - type: bind
+        source: ./.env
+        target: /app/.env
+      - type: bind
+        source: ./librechat.yaml
+        target: /app/librechat.yaml
+      - ./images:/app/client/public/images
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      # LEN AI Customizations (persisten)
+      - ./client/public/index.html:/app/client/dist/index.html
+      - ./client/public/manifest.webmanifest:/app/client/dist/manifest.webmanifest
+      - ./client/public/assets/logo.svg:/app/client/dist/assets/logo.svg
+      - ./client/dist/assets/index.CU0lyHzs.js:/app/client/dist/assets/index.CU0lyHzs.js
+      - ./client/dist/assets/locales.DaG-AiQI.js:/app/client/dist/assets/locales.DaG-AiQI.js
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3080
+      - MONGO_URI=mongodb://mongodb:27017/LibreChat
+      - MEILI_HOST=http://meilisearch:7700
+      - RAG_PORT=${RAG_PORT:-8000}
+      - RAG_API_URL=http://rag_api:${RAG_PORT:-8000}
+      # vLLM Configuration
+      - OPENAI_API_KEY=sk_live_bztUis1AVhtQV15w1hQlsjcRe4IaS3qr
+      - OPENAI_BASE_URL=http://192.168.17.63:8080/v1
+
+  rag_api:
+    image: registry.librechat.ai/danny-avila/librechat-rag-api-dev-lite:latest
+    environment:
+      - DB_HOST=vectordb
+      - RAG_PORT=${RAG_PORT:-8000}
+      # OCR Settings untuk PDF dengan gambar
+      - OCR_ENGINE=pytesseract
+      - TESSERACT_CMD=/usr/bin/tesseract
+      - EXTRACT_IMAGES=true
+      # Use huggingface embeddings (no API key needed)
+      - EMBEDDINGS_PROVIDER=huggingface
+      - HUGGINGFACE_API_KEY=
+      # No auth required
+      - RAG_API_KEY=
+      - JWT_SECRET=
+    restart: always
+    depends_on:
+      - vectordb
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads

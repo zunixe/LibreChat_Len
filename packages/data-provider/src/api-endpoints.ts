@@ -374,6 +374,18 @@ export const updateRemoteAgentsPermissions = (roleName: string) =>
 export const updateMarketplacePermissions = (roleName: string) =>
   `${getRole(roleName)}/marketplace`;
 
+/* Admin */
+const adminRoot = `${BASE_URL}/api/admin`;
+
+export const adminUsers = (params: q.AdminUserListParams) => `${adminRoot}/users${buildQuery(params)}`;
+export const adminUser = (id: string) => `${adminRoot}/users/${encodeURIComponent(id)}`;
+export const adminUserResetPassword = (id: string) =>
+  `${adminRoot}/users/${encodeURIComponent(id)}/reset-password`;
+export const adminRoles = () => `${adminRoot}/roles`;
+export const adminRole = (name: string) => `${adminRoles()}/${encodeURIComponent(name)}`;
+export const updateRoleAtomic = (roleName: string) => `${getRole(roleName)}`;
+
+
 /* Conversation Tags */
 export const conversationTags = (tag?: string) =>
   `${BASE_URL}/api/tags${tag != null && tag ? `/${encodeURIComponent(tag)}` : ''}`;

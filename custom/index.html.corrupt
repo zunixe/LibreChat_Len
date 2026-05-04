@@ -1,0 +1,142 @@
+<!DOCTYPE html>                                                                       
+<html lang="en-US">                                                                                                   
+  <head>                                                                                                      
+    <meta charset="utf-8" />                                                                
+    <base href="/" />                                                                                                 
+    <meta name="theme-color" content="#171717" />                             
+    <meta name="mobile-web-app-capable" content="yes" />                                                      
+    <meta name="apple-mobile-web-app-capable" content="yes" />                        
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="LEN AI - An open source chat application with support for multiple AI models" />
+    <title>LEN AI</title>                                           
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />      
+    
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon-180x180.png" />       
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
+    <style>                                                                      
+      html,                                                                          
+      body {                                                                         
+        margin: 0;                                                                          
+        padding: 0;                                                                
+        height: 100%;                                                                        
+      }                                                                                     
+    </style>                                                                       
+    <script>                                                                                 
+      const theme = localStorage.getItem('color-theme');                                  
+      const loadingContainerStyle = document.createElement('style');                        
+      let backgroundColor;                                                                
+                                                                                             
+      if (theme === 'dark') {                                                               
+        backgroundColor = '#0d0d0d';                                                 
+      } else if (theme === 'light') {                                                        
+        backgroundColor = '#ffffff';                                                       
+      } else if (theme === 'system') {                                                    
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;  
+        backgroundColor = prefersDarkScheme ? '#0d0d0d' : '#ffffff';                       
+      } else {                                                                               
+        backgroundColor = '#ffffff';                                                          
+      }                                                                                      
+                                                                                              
+      loadingContainerStyle.innerHTML = `                                                 
+        #loading-container {                                                                  
+          display: flex;                                                                      
+          align-items: center;                                                               
+          justify-content: center;                                                            
+          height: 100vh;                                                                     
+          background-color: ${backgroundColor};                                                                                       
+        }                                                                                  
+      `;                                                                                     
+      document.head.appendChild(loadingContainerStyle);                                                                               
+    </script>                                                                                
+    <script type="module" crossorigin src="./assets/validation.BDfQVMVt.js"></script>     
+    <script type="module" crossorigin src="./assets/math-katex.Bw_N0rIA.js"></script>         
+- index.html 1/89 1%
+<!DOCT
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="theme-color" content="#171717" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="LEN AI - An open source chat application with support for multiple AI models" />
+    <title>LEN AI</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon-180x180.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
+    <script>
+      const theme = localStorage.getItem('color-theme');
+      const loadingContainerStyle = document.createElement('style');
+      let backgroundColor;
+
+      if (theme === 'dark') {
+        backgroundColor = '#0d0d0d';
+      } else if (theme === 'light') {
+        backgroundColor = '#ffffff';
+      } else if (theme === 'system') {
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        backgroundColor = prefersDarkScheme ? '#0d0d0d' : '#ffffff';
+      } else {
+        backgroundColor = '#ffffff';
+      }
+
+      loadingContainerStyle.innerHTML = `
+        #loading-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          background-color: ${backgroundColor};
+        }
+      `;
+      document.head.appendChild(loadingContainerStyle);
+    </script>
+    <script type="mo:dule" crossorigin src="./assets/validation.BDfQVMVt.js"></script>
+    <script type="module" crossorigin src="./assets/math-katex.Bw_N0rIA.js"></script>
+    <script type="module" crossorigin src="./assets/vendor.ii3c4ZsT.js"></script>
+    <script type="module" crossorigin src="./assets/i18n.cHcC7FeE.js"></script>
+    <script type="module" crossorigin src="./assets/locales.DaG-AiQI.js"></script>
+    <script type="module" crossorigin src="./assets/routing.Cs_F8dJ9.js"></script>
+    <script type="module" crossorigin src="./assets/radix-ui.DeGez9D7.js"></script>
+    <script type="module" crossorigin src="./assets/react-interactions.CQfIFd89.js"></script>
+    <script type="module" crossorigin src="./assets/tanstack-vendor.B0nDflIy.js"></script>
+    <script type="module" crossorigin src="./assets/avatars.B-PntWQn.js"></script>
+    <script type="module" crossorigin src="./assets/advanced-inputs.B1WcUyQc.js"></script>
+    <script type="module" crossorigin src="./assets/virtualization.CauWNMhE.js"></script>
+    <script type="module" crossorigin src="./assets/animations.V_Hws-qx.js"></script>
+    <script type="module" crossorigin src="./assets/headlessui.CwHmAQH1.js"></script>
+    <script type="module" crossorigin src="./assets/framer-motion.C0fougaU.js"></script>
+    <script type="module" crossorigin src="./assets/http-client.DYUieOft.js"></script>
+    <script type="module" crossorigin src="./assets/utilities.Begnojub.js"></script>
+    <script type="module" crossorigin src="./assets/date-utils.ejIRoDC8.js"></script>
+    <script type="module" crossorigin src="./assets/codemirror-state.C8nmO8dc.js"></script>
+    <script type="module" crossorigin src="./assets/codemirror-view.CNRUDb2y.js"></script>
+    <script type="module" crossorigin src="./assets/codemirror-language.CV-IxSzO.js"></script>
+    <script type="module" crossorigin src="./assets/codemirror-core.CAWiTpJW.js"></script>
+    <script type="module" crossorigin src="./assets/sandpack.5xGeeRT4.js"></script>
+    <script type="module" crossorigin src="./assets/forms.Bp1EjCBi.js"></script>
+    <script type="module" crossorigin src="./assets/markdown_highlight.BkPTQz6_.js"></script>
+    <script type="module" crossorigin src="./assets/markdown-processing.DIVfFRIM.js"></script>
+    <script type="module" crossorigin src="./assets/security-ui.BzHheFgs.js"></script>
+    <script type="module" crossorigin src="./assets/code-editor.DEQwNiwG.js"></script>
+    <script type="module" crossorigin src="./assets/heic-converter.Cz_Prg7D.js"></script>
+    <script type="module" crossorigin src="./assets/index.CU0lyHzs.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/math-katex.shCdvSET.css">
+    <link rel="stylesheet" crossorigin href="./assets/index.rDcWQE1u.css">
+  <link rel="manifest" href="./manifest.webmanifest" crossorigin="use-credentials"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
+  <body>
+    <div id="root">
+      <div id="loading-container"></div>
+    </div>
+  </body>
+</html>

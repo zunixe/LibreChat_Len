@@ -206,3 +206,56 @@ export type GraphTokenResponse = {
   expires_in: number;
   scope: string;
 };
+
+/* Admin */
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  provider: string;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminUserListParams = {
+  cursor?: string;
+  limit?: number;
+  search?: string;
+  role?: string;
+};
+
+export type AdminUserListResponse = {
+  users: AdminUser[];
+  nextCursor: string | null;
+};
+
+export type AdminRole = {
+  name: string;
+  permissions: Record<string, Record<string, boolean>>;
+};
+
+export type AdminRolesResponse = AdminRole[];
+
+export type AdminCreateUserPayload = {
+  email: string;
+  name: string;
+  password: string;
+  role: string;
+};
+
+export type AdminUpdateUserPayload = {
+  name?: string;
+  role?: string;
+  emailVerified?: boolean;
+};
+
+export type AdminResetPasswordPayload = {
+  password: string;
+};
+
+export type AdminCreateRolePayload = {
+  name: string;
+  basePermissionsFrom: 'USER' | 'ADMIN';
+};

@@ -1,0 +1,12 @@
+services:
+  len-proxy:
+    image: nginx:alpine
+    container_name: len-proxy
+    volumes:
+      - ./nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - librechat_default
+
+  api:
+    networks:
+      - librechat_default

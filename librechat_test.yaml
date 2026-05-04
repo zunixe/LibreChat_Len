@@ -1,0 +1,57 @@
+version: 1.2.1
+
+cache: true
+
+webSearch:
+  enabled: false
+
+interface:
+  fileSearch: false
+  webSearch: false
+  artifacts: false
+
+mcpSettings:
+  allowedDomains:
+    - "host.docker.internal"
+
+mcpServers:
+  kms:
+    type: sse
+    url: http://host.docker.internal:3000/sse
+    timeout: 60000
+
+endpoints:
+  custom:
+    - name: "LEN-AI"
+      apiKey: "sk_dev_ik83Yi4SraHQZ5QXj1JdCgcqbsDmavWD"
+      baseURL: "https://ai.len.co.id:8001/v1"
+      models:
+        default:
+          - "financial"
+          - "risk"
+        fetch: false
+      titleConvo: true
+      titleModel: "financial"
+      summarize: false
+      summaryModel: "financial"
+      modelDisplayLabel: "LEN AI"
+      dropParams:
+        - "tools"
+        - "tool_choice"
+        - "functions"
+        - "function_call"
+      headers:
+        X-API-Key: "sk_dev_ik83Yi4SraHQZ5QXj1JdCgcqbsDmavWD"
+
+    - name: "LEN-AI General"
+      apiKey: "sk_live_bztUis1AVhtQV15w1hQlsjcRe4IaS3qr"
+      baseURL: "http://192.168.17.63:8080/v1"
+      models:
+        default:
+          - "qwen3-14b"
+        fetch: false
+      titleConvo: true
+      titleModel: "qwen3-14b"
+      summarize: false
+      summaryModel: "qwen3-14b"
+      modelDisplayLabel: "LEN AI General"

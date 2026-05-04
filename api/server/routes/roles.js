@@ -106,6 +106,29 @@ const createPermissionUpdateHandler = (permissionKey) => {
 };
 
 /**
+ * PUT /api/roles/:roleName
+ * Atomically update all permissions for a specific role
+ */
+router.put('/:roleName', manageRoles, async (req, res) => {
+  const { roleName: _r } = req.params;
+  const roleName = _r.toUpperCase();
+  const { permissions } = req.body;
+
+  try {
+    const role = await getRoleByName(roleName);
+    if (!role) {
+      return res.status(404).send({ message: 'Role not found' });
+    }
+
+    const updatedRole = await updateRoleByName(roleName, { permissions });
+    res.status(200).send(updatedRole);
+  } catch (error) {
+    logger.error(`[PUT /roles/:roleName] Error:`, error);
+    return res.status(400).send({ message: 'Failed to update role permissions', error: error.message });
+  }
+});
+
+/**
  * GET /api/roles/:roleName
  * Get a specific role by name
  */

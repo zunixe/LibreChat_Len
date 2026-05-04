@@ -1,0 +1,45 @@
+// Backup of custom EndpointController with role-based filtering
+const { logger } = require('@librechat/data-schemas');
+const { getEndpointsConfig } = require('~/server/services/Config');
+const mongoose = require('mongoose');
+
+async function applyRoleBasedFiltering(endpointsConfig, userRole) {
+  try {
+    if (!userRole) return endpointsConfig;
+    const roleConfig = await mongoose.connection.db.collection('modelRoles').findOne({ role: userRole });
+    if (!roleConfig) return endpointsConfig;
+    const { allowedEndpoints, allowedModels, modelMapping } = roleConfig;
+    const filteredConfig = {};
+    for (const [endpoint, config] of Object.entries(endpointsConfig)) {
+      if (allowedEndpoints && !allowedEndpoints.includes(endpoint)) continue;
+      if (config && Array.isArray(config.models)) {
+        const originalModels = config.models;
+        let filteredModels = originalModels;
+        if (modelMapping && modelMapping[endpoint]) {
+          filteredModels = originalModels.filter(model =>
+            modelMapping[endpoint].includes(typeof model === 'string' ? model : model.name)
+          );
+        } else if (allowedModels) {
+          filteredModels = originalModels.filter(model =>
+            allowedModels.includes(typeof model === 'string' ? model : model.name)
+          );
+        }
+        filteredConfig[endpoint] = { ...config, models: filteredModels };
+      } else {
+        filteredConfig[endpoint] = config;
+      }
+    }
+    return filteredConfig;
+  } catch (error) {
+    logger.error('Error in applyRoleBasedFiltering:', error);
+    return endpointsConfig;
+  }
+}
+
+async function endpointController(req, res) {
+  const endpointsConfig = await getEndpointsConfig(req);
+  const filteredConfig = await applyRoleBasedFiltering(endpointsConfig, req.user?.role);
+  res.send(JSON.stringify(filteredConfig));
+}
+
+module.exports = endpointController;

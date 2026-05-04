@@ -342,6 +342,19 @@ export function createRoleMethods(mongoose: typeof import('mongoose'), deps: Rol
     }
   }
 
+  async function createRole(roleData: { name: string; permissions: Record<string, Record<string, boolean>> }) {
+    const Role = mongoose.models.Role;
+    const role = new Role(roleData);
+    await role.save();
+    return role.toObject() as IRole;
+  }
+
+  async function deleteRoleByName(roleName: string) {
+    const Role = mongoose.models.Role;
+    const result = await Role.deleteOne({ name: roleName });
+    return { deletedCount: result.deletedCount ?? 0 };
+  }
+
   return {
     listRoles,
     initializeRoles,
@@ -349,6 +362,8 @@ export function createRoleMethods(mongoose: typeof import('mongoose'), deps: Rol
     updateRoleByName,
     updateAccessPermissions,
     migrateRoleSchema,
+    createRole,
+    deleteRoleByName,
   };
 }
 

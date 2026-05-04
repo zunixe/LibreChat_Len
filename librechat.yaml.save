@@ -1,0 +1,24 @@
+sk_dev_ik83Yi4SraHQZ5QXj1JdCgcqbsDmavWDhttps://ai.len.co.id:8001/v1version: 1.2.1
+cache: true
+webSearch:
+  enabled: false
+interface:
+  fileSearch: false
+  webSearch: false
+  artifacts: false
+endpoints:
+  custom:
+    - name: "LEN-AI"
+      apiKey: "sk_dev_ik83Yi4SraHQZ5QXj1JdCgcqbsDmavWD"
+      baseURL: "https://ai.len.co.id:8001/v1"
+      models:
+        default: ["financial", "risk"]
+        fetch: false
+      titleConvo: true
+      titleModel: "financial"
+      summarize: false
+      summaryModel: "financial"
+      modelDisplayLabel: "LEN AI"
+      dropParams: ["tools", "tool_choice", "functions", "function_call"]
+      headers:
+        X-API-Key: "sk_dev_ik83Yi4SraHQZ5QXj1JdCgcqbsDmavWD"

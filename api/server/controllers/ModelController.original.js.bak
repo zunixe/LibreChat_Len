@@ -1,0 +1,69 @@
+// Backup of custom ModelController with role-based filtering
+const { logger } = require('@librechat/data-schemas');
+const { CacheKeys } = require('librechat-data-provider');
+const { loadDefaultModels, loadConfigModels } = require('~/server/services/Config');
+const { getLogStores } = require('~/cache');
+const mongoose = require('mongoose');
+
+const getModelsConfig = async (req) => {
+  const cache = getLogStores(CacheKeys.CONFIG_STORE);
+  let modelsConfig = await cache.get(CacheKeys.MODELS_CONFIG);
+  if (!modelsConfig) {
+    modelsConfig = await loadModels(req);
+  }
+  return modelsConfig;
+};
+
+async function loadModels(req) {
+  const cache = getLogStores(CacheKeys.CONFIG_STORE);
+  const cachedModelsConfig = await cache.get(CacheKeys.MODELS_CONFIG);
+  if (cachedModelsConfig) {
+    return cachedModelsConfig;
+  }
+  const defaultModelsConfig = await loadDefaultModels(req);
+  const customModelsConfig = await loadConfigModels(req);
+  const modelConfig = { ...defaultModelsConfig, ...customModelsConfig };
+  await cache.set(CacheKeys.MODELS_CONFIG, modelConfig);
+  return modelConfig;
+}
+
+async function applyRoleBasedFiltering(modelConfig, userRole) {
+  try {
+    if (!userRole) return modelConfig;
+    const roleConfig = await mongoose.connection.db.collection('modelRoles').findOne({ role: userRole });
+    if (!roleConfig) return modelConfig;
+    const { allowedEndpoints, allowedModels, modelMapping } = roleConfig;
+    const filteredConfig = {};
+    for (const [endpoint, models] of Object.entries(modelConfig)) {
+      if (allowedEndpoints && !allowedEndpoints.includes(endpoint)) continue;
+      if (Array.isArray(models)) {
+        if (modelMapping && modelMapping[endpoint]) {
+          filteredConfig[endpoint] = models.filter(model => modelMapping[endpoint].includes(model));
+        } else if (allowedModels) {
+          filteredConfig[endpoint] = models.filter(model => allowedModels.includes(model));
+        } else {
+          filteredConfig[endpoint] = models;
+        }
+      } else {
+        filteredConfig[endpoint] = models;
+      }
+    }
+    return filteredConfig;
+  } catch (error) {
+    logger.error('Error in applyRoleBasedFiltering:', error);
+    return modelConfig;
+  }
+}
+
+async function modelController(req, res) {
+  try {
+    let modelConfig = await loadModels(req);
+    modelConfig = await applyRoleBasedFiltering(modelConfig, req.user?.role);
+    res.send(modelConfig);
+  } catch (error) {
+    logger.error('Error fetching models:', error);
+    res.status(500).send({ error: error.message });
+  }
+}
+
+module.exports = { modelController, loadModels, getModelsConfig };

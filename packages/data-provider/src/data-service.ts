@@ -1081,6 +1081,53 @@ export function getDomainServerBaseUrl(): string {
   return `${endpoints.apiBaseUrl()}/api`;
 }
 
+/* Admin */
+
+export function listAdminUsers(params?: q.AdminUserListParams): Promise<q.AdminUserListResponse> {
+  return request.get(endpoints.adminUsers(params ?? {}));
+}
+
+export function createAdminUser(payload: q.AdminCreateUserPayload): Promise<q.AdminUser> {
+  return request.post(endpoints.adminUsers({}), payload);
+}
+
+export function updateAdminUser(
+  id: string,
+  payload: q.AdminUpdateUserPayload,
+): Promise<q.AdminUser> {
+  return request.patch(endpoints.adminUser(id), payload);
+}
+
+export function resetAdminUserPassword(
+  id: string,
+  payload: q.AdminResetPasswordPayload,
+): Promise<{ ok: boolean }> {
+  return request.post(endpoints.adminUserResetPassword(id), payload);
+}
+
+export function deleteAdminUser(id: string): Promise<{ ok: boolean }> {
+  return request.delete(endpoints.adminUser(id));
+}
+
+export function listAdminRoles(): Promise<q.AdminRolesResponse> {
+  return request.get(endpoints.adminRoles());
+}
+
+export function createAdminRole(payload: q.AdminCreateRolePayload): Promise<q.AdminRole> {
+  return request.post(endpoints.adminRoles(), payload);
+}
+
+export function deleteAdminRole(name: string): Promise<{ ok: boolean }> {
+  return request.delete(endpoints.adminRole(name));
+}
+
+export function updateRolePermissions(
+  roleName: string,
+  payload: Record<string, Record<string, boolean>>,
+): Promise<q.AdminRole> {
+  return request.put(endpoints.updateRoleAtomic(roleName), { permissions: payload });
+}
+
 /* Active Jobs */
 export interface ActiveJobsResponse {
   activeJobIds: string[];

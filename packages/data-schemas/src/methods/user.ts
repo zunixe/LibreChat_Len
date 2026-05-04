@@ -321,6 +321,46 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
     return null;
   }
 
+  async function listUsers({
+    limit = 20,
+    cursor,
+    search,
+    role,
+  }: {
+    limit?: number;
+    cursor?: string | null;
+    search?: string;
+    role?: string;
+  }): Promise<{ users: Partial<IUser>[]; nextCursor: string | null }> {
+    const User = mongoose.models.User;
+    const query: FilterQuery<IUser> = {};
+
+    if (search && search.trim().length > 0) {
+      const regex = new RegExp(search.trim(), 'i');
+      query.$or = [{ email: regex }, { name: regex }, { username: regex }];
+    }
+
+    if (role) {
+      query.role = role;
+    }
+
+    if (cursor) {
+      query._id = { $gt: new mongoose.Types.ObjectId(cursor) };
+    }
+
+    const users = await User.find(query)
+      .sort({ _id: 1 })
+      .limit(limit + 1)
+      .select('name email role provider emailVerified createdAt updatedAt')
+      .lean();
+
+    const hasMore = users.length > limit;
+    const slicedUsers = hasMore ? users.slice(0, limit) : users;
+    const nextCursor = hasMore && slicedUsers.length > 0 ? slicedUsers[slicedUsers.length - 1]._id?.toString() ?? null : null;
+
+    return { users: slicedUsers, nextCursor };
+  }
+
   return {
     findUser,
     countUsers,
@@ -332,6 +372,7 @@ export function createUserMethods(mongoose: typeof import('mongoose')) {
     deleteUserById,
     updateUserPlugins,
     toggleUserMemories,
+    listUsers,
   };
 }
 

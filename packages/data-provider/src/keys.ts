@@ -64,12 +64,12 @@ export enum QueryKeys {
   activeJobs = 'activeJobs',
   /* Agent API Keys */
   agentApiKeys = 'agentApiKeys',
+  /* Admin */
+  adminUsers = 'adminUsers',
+  adminUser = 'adminUser',
+  adminRoles = 'adminRoles',
+  adminRole = 'adminRole',
 }
-
-// Dynamic query keys that require parameters
-export const DynamicQueryKeys = {
-  agentFiles: (agentId: string) => ['agentFiles', agentId] as const,
-} as const;
 
 export enum MutationKeys {
   createAgentApiKey = 'createAgentApiKey',
@@ -96,4 +96,17 @@ export enum MutationKeys {
   enableTwoFactor = 'enableTwoFactor',
   verifyTwoFactor = 'verifyTwoFactor',
   updateMemoryPreferences = 'updateMemoryPreferences',
+  /* Admin */
+  createAdminUser = 'createAdminUser',
+  updateAdminUser = 'updateAdminUser',
+  deleteAdminUser = 'deleteAdminUser',
+  resetAdminUserPassword = 'resetAdminUserPassword',
+  createAdminRole = 'createAdminRole',
+  deleteAdminRole = 'deleteAdminRole',
+  updateRolePermissions = 'updateRolePermissions',
 }
+
+// Dynamic query keys that require parameters
+export const DynamicQueryKeys = {
+  agentFiles: (agentId: string) => ['agentFiles', agentId] as const,
+} as const;

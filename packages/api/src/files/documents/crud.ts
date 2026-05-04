@@ -69,7 +69,7 @@ function getParserForMimeType(mimetype: string): FileParseFn | undefined {
   return undefined;
 }
 
-/** Parses PDF, returns text inside. */
+/** Parses PDF, returns text inside. Falls back to OCR if text-based extraction yields little content. */
 async function pdfToText(file: Express.Multer.File): Promise<string> {
   // Imported inline so that Jest can test other routes without failing due to loading ESM
   const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -88,7 +88,61 @@ async function pdfToText(file: Express.Multer.File): Promise<string> {
     fullText += pageText + '\n';
   }
 
+  // If extracted text is too short, likely an image-based PDF - use OCR
+  if (fullText.trim().length < 100) {
+    console.log('[OCR Fallback] PDF appears to be image-based, using Tesseract OCR...');
+    return await pdfToTextWithOCR(file);
+  }
+
   return fullText;
+}
+
+/** OCR Fallback for image-based PDFs using Tesseract */
+async function pdfToTextWithOCR(file: Express.Multer.File): Promise<string> {
+  const { exec } = await import('child_process');
+  const path = await import('path');
+  const os = await import('os');
+  const fs = await import('fs');
+
+  const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'ocr-'));
+  
+  try {
+    // Convert PDF to images using pdftoppm
+    await new Promise<void>((resolve, reject) => {
+      exec(`pdftoppm -png "${file.path}" "${tmpDir}/page"`, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    // Get all generated images
+    const images = (await fs.promises.readdir(tmpDir))
+      .filter(f => f.endsWith('.png'))
+      .sort();
+
+    if (images.length === 0) {
+      throw new Error('No images generated from PDF');
+    }
+
+    // OCR each page with Tesseract
+    let allText = '';
+    for (let i = 0; i < images.length; i++) {
+      const imgPath = path.join(tmpDir, images[i]);
+      const pageText = await new Promise<string>((resolve, reject) => {
+        exec(`tesseract "${imgPath}" - -l ind+eng`, (error, stdout) => {
+          if (error) reject(error);
+          else resolve(stdout);
+        });
+      });
+      allText += `=== HALAMAN ${i + 1} ===\n${pageText}\n\n`;
+    }
+
+    console.log(`[OCR Fallback] Successfully OCR'd ${images.length} pages`);
+    return allText;
+  } finally {
+    // Cleanup temp directory
+    await fs.promises.rm(tmpDir, { recursive: true, force: true });
+  }
 }
 
 /** Parses Word document, returns text inside. */
