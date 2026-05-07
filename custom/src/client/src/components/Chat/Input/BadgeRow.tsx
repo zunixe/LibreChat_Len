@@ -331,7 +331,7 @@ function BadgeRow({
       mcpEnabled={mcpEnabled}
     >
       <div ref={containerRef} className="relative flex flex-wrap items-center gap-2">
-        {showEphemeralBadges === true && <ToolsDropdown />}
+        {showEphemeralBadges === true && <ToolsDropdown mcpEnabled={mcpEnabled} />}
         {tempBadges.map((badge, index) => (
           <React.Fragment key={badge.id}>
             {dragState.draggedBadge && dragState.insertIndex === index && ghostBadge && (

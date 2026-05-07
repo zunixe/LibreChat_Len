@@ -133,7 +133,7 @@ function MCPSelect({ mcpEnabled }: { mcpEnabled?: boolean }) {
     permission: Permissions.USE,
   });
 
-  if (!(canUseMcp || mcpEnabled) || !selectableServers || selectableServers.length === 0) {
+  if (!(canUseMcp && mcpEnabled) || !selectableServers || selectableServers.length === 0) {
     return null;
   }
 
