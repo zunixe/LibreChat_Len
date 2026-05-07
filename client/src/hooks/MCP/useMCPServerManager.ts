@@ -38,7 +38,8 @@ type PollIntervals = Record<string, NodeJS.Timeout | null>;
 export function useMCPServerManager({
   conversationId,
   storageContextKey,
-}: { conversationId?: string | null; storageContextKey?: string } = {}) {
+  mcpEnabled,
+}: { conversationId?: string | null; storageContextKey?: string; mcpEnabled?: boolean } = {}) {
   const localize = useLocalize();
   const queryClient = useQueryClient();
   const { showToast } = useToastContext();
@@ -48,12 +49,13 @@ export function useMCPServerManager({
     permissionType: PermissionTypes.MCP_SERVERS,
     permission: Permissions.USE,
   });
+  const mcpQueryEnabled = canUseMcp || !!mcpEnabled;
 
-  const { data: loadedServers, isLoading } = useMCPServersQuery({ enabled: canUseMcp });
+  const { data: loadedServers, isLoading } = useMCPServersQuery({ enabled: mcpQueryEnabled });
 
   // Fetch effective permissions for all MCP servers
   const { data: permissionsMap } = useGetAllEffectivePermissionsQuery(ResourceType.MCPSERVER, {
-    enabled: canUseMcp,
+    enabled: mcpQueryEnabled,
   });
 
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
