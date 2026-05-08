@@ -1135,6 +1135,13 @@ export function updateRoleModelAccess(
   return request.put(endpoints.adminRoleModelAccess(roleName), payload);
 }
 
+export function renameRole(
+  roleName: string,
+  payload: { newName: string },
+): Promise<{ name: string }> {
+  return request.put(endpoints.adminRoleRename(roleName), payload);
+}
+
 /* Active Jobs */
 export interface ActiveJobsResponse {
   activeJobIds: string[];

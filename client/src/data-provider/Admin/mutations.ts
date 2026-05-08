@@ -164,3 +164,29 @@ export const useUpdateRoleModelAccessMutation = (
     },
   );
 };
+
+export const useRenameRoleMutation = (
+  options?: UseMutationOptions<
+    { name: string },
+    Error,
+    { roleName: string; newName: string }
+  >,
+): UseMutationResult<
+  { name: string },
+  Error,
+  { roleName: string; newName: string }
+> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ roleName, newName }) =>
+      dataService.renameRole(roleName, { newName }),
+    {
+      mutationKey: [MutationKeys.renameRole],
+      ...options,
+      onSuccess: (data, variables, context) => {
+        queryClient.invalidateQueries([QueryKeys.adminRoles]);
+        options?.onSuccess?.(data, variables, context);
+      },
+    },
+  );
+};

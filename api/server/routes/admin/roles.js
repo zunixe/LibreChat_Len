@@ -86,6 +86,34 @@ router.post('/', requireAdminAccess, async (req, res) => {
   }
 });
 
+router.put('/:name/rename', requireAdminAccess, async (req, res) => {
+  try {
+    const normalizedName = req.params.name.toUpperCase().trim();
+    const { newName } = req.body;
+    const normalizedNewName = (newName ?? '').toUpperCase().trim();
+    if (!normalizedNewName) {
+      return res.status(400).json({ message: 'New role name is required' });
+    }
+    if (Object.values(SystemRoles).includes(normalizedName)) {
+      return res.status(400).json({ message: 'Cannot rename a system role' });
+    }
+    const existing = await getRoleByName(normalizedName);
+    if (!existing) {
+      return res.status(404).json({ message: 'Role not found' });
+    }
+    const duplicate = await getRoleByName(normalizedNewName);
+    if (duplicate) {
+      return res.status(400).json({ message: 'Role name already exists' });
+    }
+    const db = mongoose.connection.db;
+    await db.collection('roles').updateOne({ name: normalizedName }, { $set: { name: normalizedNewName } });
+    await db.collection('modelRoles').updateOne({ role: normalizedName }, { $set: { role: normalizedNewName } });
+    res.status(200).json({ name: normalizedNewName });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 router.put('/:name/permissions', requireAdminAccess, async (req, res) => {
   try {
     const normalizedName = req.params.name.toUpperCase().trim();
