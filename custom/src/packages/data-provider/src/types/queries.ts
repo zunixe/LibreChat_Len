@@ -261,6 +261,7 @@ export type AdminCreateUserPayload = {
   role: string;
   allowedEndpoints?: string[] | null;
   allowedModels?: string[] | null;
+  endpointAccess?: EndpointAccess[];
 };
 
 export type AdminUpdateUserPayload = {
@@ -269,6 +270,7 @@ export type AdminUpdateUserPayload = {
   emailVerified?: boolean;
   allowedEndpoints?: string[] | null;
   allowedModels?: string[] | null;
+  endpointAccess?: EndpointAccess[];
 };
 
 export type AdminResetPasswordPayload = {

@@ -24,11 +24,23 @@ async function getAllModelRoles() {
     const roles = await db.collection('modelRoles').find({}).toArray();
     const roleMap = {};
     for (const r of roles) {
-      roleMap[r.role] = {
-        allowedEndpoints: r.allowedEndpoints || null,
-        allowedModels: r.allowedModels || null,
-        description: r.description || '',
-      };
+      if (r.endpoints && Array.isArray(r.endpoints)) {
+        roleMap[r.role] = {
+          allowedEndpoints: r.endpoints.map((e) => e.endpoint),
+          allowedModels: [...new Set(r.endpoints.flatMap((e) => e.models))],
+          endpointAccess: r.endpoints,
+        };
+      } else {
+        roleMap[r.role] = {
+          allowedEndpoints: r.allowedEndpoints || null,
+          allowedModels: r.allowedModels || null,
+          endpointAccess: (r.allowedEndpoints || []).map((ep) => ({
+            endpoint: ep,
+            models: r.allowedModels || [],
+            showMCP: ep === 'LEN-AI General',
+          })),
+        };
+      }
     }
     return roleMap;
   } catch (err) {
@@ -90,21 +102,29 @@ router.post('/', requireAdminAccess, async (req, res) => {
     };
     const user = await createUser(userData, undefined, true, true);
 
-    if (allowedEndpoints !== undefined || allowedModels !== undefined) {
+    if (allowedEndpoints !== undefined || allowedModels !== undefined || req.body.endpointAccess !== undefined) {
       const db = mongoose.connection.db;
       const userRole = role ?? SystemRoles.USER;
-      const modelRoleUpdate = {};
-      if (allowedEndpoints !== undefined) {
-        modelRoleUpdate.allowedEndpoints = allowedEndpoints;
+      if (req.body.endpointAccess) {
+        await db.collection('modelRoles').updateOne(
+          { role: userRole },
+          { $set: { endpoints: req.body.endpointAccess, updatedAt: new Date() } },
+          { upsert: true },
+        );
+      } else {
+        const modelRoleUpdate = {};
+        if (allowedEndpoints !== undefined) {
+          modelRoleUpdate.allowedEndpoints = allowedEndpoints;
+        }
+        if (allowedModels !== undefined) {
+          modelRoleUpdate.allowedModels = allowedModels;
+        }
+        await db.collection('modelRoles').updateOne(
+          { role: userRole },
+          { $set: { ...modelRoleUpdate, updatedAt: new Date() } },
+          { upsert: true },
+        );
       }
-      if (allowedModels !== undefined) {
-        modelRoleUpdate.allowedModels = allowedModels;
-      }
-      await db.collection('modelRoles').updateOne(
-        { role: userRole },
-        { $set: { ...modelRoleUpdate, updatedAt: new Date() } },
-        { upsert: true },
-      );
     }
 
     const modelRoles = await getAllModelRoles();
@@ -125,21 +145,29 @@ router.patch('/:id', requireAdminAccess, async (req, res) => {
     if (req.body.role !== undefined) updateData.role = req.body.role;
     if (req.body.emailVerified !== undefined) updateData.emailVerified = req.body.emailVerified;
 
-    if (req.body.allowedEndpoints !== undefined || req.body.allowedModels !== undefined) {
+    if (req.body.allowedEndpoints !== undefined || req.body.allowedModels !== undefined || req.body.endpointAccess !== undefined) {
       const db = mongoose.connection.db;
       const role = req.body.role !== undefined ? req.body.role : existing.role;
-      const modelRoleUpdate = {};
-      if (req.body.allowedEndpoints !== undefined) {
-        modelRoleUpdate.allowedEndpoints = req.body.allowedEndpoints;
+      if (req.body.endpointAccess) {
+        await db.collection('modelRoles').updateOne(
+          { role },
+          { $set: { endpoints: req.body.endpointAccess, updatedAt: new Date() } },
+          { upsert: true },
+        );
+      } else {
+        const modelRoleUpdate = {};
+        if (req.body.allowedEndpoints !== undefined) {
+          modelRoleUpdate.allowedEndpoints = req.body.allowedEndpoints;
+        }
+        if (req.body.allowedModels !== undefined) {
+          modelRoleUpdate.allowedModels = req.body.allowedModels;
+        }
+        await db.collection('modelRoles').updateOne(
+          { role },
+          { $set: { ...modelRoleUpdate, updatedAt: new Date() } },
+          { upsert: true },
+        );
       }
-      if (req.body.allowedModels !== undefined) {
-        modelRoleUpdate.allowedModels = req.body.allowedModels;
-      }
-      await db.collection('modelRoles').updateOne(
-        { role },
-        { $set: { ...modelRoleUpdate, updatedAt: new Date() } },
-        { upsert: true },
-      );
     }
 
     const updated = await updateUser(req.params.id, updateData);

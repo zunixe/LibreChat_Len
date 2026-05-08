@@ -14,6 +14,7 @@ import {
   SelectContent,
   SelectItem,
   Checkbox,
+  Switch,
 } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import {
@@ -51,6 +52,7 @@ export default function UserFormDialog({
   const [allowedModels, setAllowedModels] = useState<string[]>(
     user?.modelAccess?.allowedModels ?? [],
   );
+  const [showMCPMap, setShowMCPMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (user) {
@@ -59,6 +61,12 @@ export default function UserFormDialog({
       setRole(user.role);
       setAllowedEndpoints(user.modelAccess?.allowedEndpoints ?? []);
       setAllowedModels(user.modelAccess?.allowedModels ?? []);
+      const ea = user.modelAccess?.endpointAccess ?? [];
+      const mcpMap: Record<string, boolean> = {};
+      for (const entry of ea) {
+        mcpMap[entry.endpoint] = entry.showMCP;
+      }
+      setShowMCPMap(mcpMap);
     } else {
       setName('');
       setEmail('');
@@ -66,6 +74,7 @@ export default function UserFormDialog({
       setRole('USER');
       setAllowedEndpoints([]);
       setAllowedModels([]);
+      setShowMCPMap({});
     }
   }, [user]);
 
@@ -97,6 +106,15 @@ export default function UserFormDialog({
   const toggleEndpoint = (ep: string) => {
     setAllowedEndpoints((prev) => {
       const next = prev.includes(ep) ? prev.filter((e) => e !== ep) : [...prev, ep];
+      if (!next.includes(ep)) {
+        setShowMCPMap((m) => {
+          const copy = { ...m };
+          delete copy[ep];
+          return copy;
+        });
+      } else {
+        setShowMCPMap((m) => ({ ...m, [ep]: m[ep] ?? false }));
+      }
       const availableModels = new Set<string>();
       for (const e of next) {
         const epModels = endpointModelMap[e];
@@ -111,13 +129,29 @@ export default function UserFormDialog({
     });
   };
 
+  const toggleShowMCP = (ep: string) => {
+    setShowMCPMap((prev) => ({ ...prev, [ep]: !prev[ep] }));
+  };
+
   const toggleModel = (model: string) => {
     setAllowedModels((prev) =>
       prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model],
     );
   };
 
+  const buildEndpointAccess = () => {
+    return allowedEndpoints.map((ep) => ({
+      endpoint: ep,
+      models: allowedModels.filter((m) => {
+        const epModels = endpointModelMap[ep];
+        return epModels ? epModels.includes(m) : false;
+      }),
+      showMCP: showMCPMap[ep] ?? false,
+    }));
+  };
+
   const handleSubmit = () => {
+    const endpointAccess = buildEndpointAccess();
     if (isEdit && user) {
       updateMutation.mutate(
         {
@@ -125,8 +159,7 @@ export default function UserFormDialog({
           payload: {
             name,
             role,
-            allowedEndpoints: allowedEndpoints.length > 0 ? allowedEndpoints : null,
-            allowedModels: allowedModels.length > 0 ? allowedModels : null,
+            endpointAccess,
           },
         },
         { onSuccess: () => onOpenChange(false) },
@@ -138,8 +171,7 @@ export default function UserFormDialog({
           name,
           password,
           role,
-          allowedEndpoints: allowedEndpoints.length > 0 ? allowedEndpoints : null,
-          allowedModels: allowedModels.length > 0 ? allowedModels : null,
+          endpointAccess,
         },
         { onSuccess: () => onOpenChange(false) },
       );
@@ -197,18 +229,27 @@ export default function UserFormDialog({
           </div>
           <div className="flex flex-col gap-1">
             <Label>Allowed Endpoints</Label>
-            <div className="border rounded-md p-2 max-h-40 overflow-y-auto bg-white dark:bg-gray-800">
+            <div className="border rounded-md p-2 bg-white dark:bg-gray-800">
               {endpointOptions.map((ep) => (
-                <label
-                  key={ep}
-                  className="flex items-center gap-2 py-1 px-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer"
-                >
-                  <Checkbox
-                    checked={allowedEndpoints.includes(ep)}
-                    onCheckedChange={() => toggleEndpoint(ep)}
-                  />
-                  <span className="text-sm text-gray-900 dark:text-gray-100">{ep}</span>
-                </label>
+                <div key={ep} className="flex items-center justify-between py-1 px-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={allowedEndpoints.includes(ep)}
+                      onCheckedChange={() => toggleEndpoint(ep)}
+                    />
+                    <span className="text-sm text-gray-900 dark:text-gray-100">{ep}</span>
+                  </label>
+                  {allowedEndpoints.includes(ep) && (
+                    <label className="flex items-center gap-2 text-xs text-text-secondary">
+                      <Switch
+                        aria-label={`Show MCP for ${ep}`}
+                        checked={showMCPMap[ep] ?? false}
+                        onCheckedChange={() => toggleShowMCP(ep)}
+                      />
+                      MCP
+                    </label>
+                  )}
+                </div>
               ))}
             </div>
           </div>
