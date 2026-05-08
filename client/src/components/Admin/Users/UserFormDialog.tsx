@@ -21,6 +21,7 @@ import {
   useCreateAdminUserMutation,
   useUpdateAdminUserMutation,
   useAdminUsersQuery,
+  useAdminRolesQuery,
 } from '~/data-provider';
 import type { AdminUser } from 'librechat-data-provider';
 
@@ -79,13 +80,15 @@ export default function UserFormDialog({
   }, [user]);
 
   const { data: usersData } = useAdminUsersQuery({ limit: 100 });
+  const { data: adminRoles } = useAdminRolesQuery();
   const createMutation = useCreateAdminUserMutation();
   const updateMutation = useUpdateAdminUserMutation();
 
   const roleOptions = useMemo(() => {
-    const roles = usersData?.distinctRoles ?? [];
-    return [...new Set([...roles, 'ADMIN', 'USER'])].sort();
-  }, [usersData?.distinctRoles]);
+    const userRoles = usersData?.distinctRoles ?? [];
+    const definedRoles = adminRoles?.map((r) => r.name) ?? [];
+    return [...new Set([...userRoles, ...definedRoles, 'ADMIN', 'USER'])].sort();
+  }, [usersData?.distinctRoles, adminRoles]);
 
   const modelOptions = useMemo(() => {
     if (allowedEndpoints.length === 0) {
