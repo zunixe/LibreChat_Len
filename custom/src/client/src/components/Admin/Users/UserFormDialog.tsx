@@ -22,15 +22,9 @@ import {
   useUpdateAdminUserMutation,
   useAdminUsersQuery,
   useAdminRolesQuery,
+  useEndpointDefinitionsQuery,
 } from '~/data-provider';
-import type { AdminUser } from 'librechat-data-provider';
-
-const endpointModelMap: Record<string, string[]> = {
-  'LEN-AI': ['financial', 'risk'],
-  'LEN-AI General': ['LenO Bot'],
-};
-
-const endpointOptions = ['LEN-AI', 'LEN-AI General'];
+import type { AdminUser, EndpointDefinition } from 'librechat-data-provider';
 
 export default function UserFormDialog({
   open,
@@ -54,6 +48,8 @@ export default function UserFormDialog({
     user?.modelAccess?.allowedModels ?? [],
   );
   const [showMCPMap, setShowMCPMap] = useState<Record<string, boolean>>({});
+
+  const { data: endpointDefinitions } = useEndpointDefinitionsQuery();
 
   useEffect(() => {
     if (user) {
@@ -90,6 +86,19 @@ export default function UserFormDialog({
     return [...new Set([...userRoles, ...definedRoles, 'ADMIN', 'USER'])].sort();
   }, [usersData?.distinctRoles, adminRoles]);
 
+  const endpointModelMap = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    for (const def of endpointDefinitions ?? []) {
+      map[def.endpoint] = def.models;
+    }
+    return map;
+  }, [endpointDefinitions]);
+
+  const endpointOptions = useMemo(
+    () => (endpointDefinitions ?? []).map((d) => d.endpoint),
+    [endpointDefinitions],
+  );
+
   const modelOptions = useMemo(() => {
     if (allowedEndpoints.length === 0) {
       return [];
@@ -104,7 +113,7 @@ export default function UserFormDialog({
       }
     }
     return Array.from(models);
-  }, [allowedEndpoints]);
+  }, [allowedEndpoints, endpointModelMap]);
 
   const toggleEndpoint = (ep: string) => {
     setAllowedEndpoints((prev) => {

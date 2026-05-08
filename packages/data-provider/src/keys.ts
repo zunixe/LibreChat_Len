@@ -106,6 +106,8 @@ export enum MutationKeys {
   updateRolePermissions = 'updateRolePermissions',
   updateRoleModelAccess = 'updateRoleModelAccess',
   renameRole = 'renameRole',
+  endpointDefinitions = 'endpointDefinitions',
+  updateEndpointDefinitions = 'updateEndpointDefinitions',
 }
 
 // Dynamic query keys that require parameters

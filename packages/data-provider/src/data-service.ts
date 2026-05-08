@@ -1142,6 +1142,16 @@ export function renameRole(
   return request.put(endpoints.adminRoleRename(roleName), payload);
 }
 
+export function getEndpointDefinitions(): Promise<q.EndpointDefinition[]> {
+  return request.get(endpoints.adminEndpointDefinitions());
+}
+
+export function updateEndpointDefinitions(
+  definitions: q.EndpointDefinition[],
+): Promise<q.EndpointDefinition[]> {
+  return request.put(endpoints.adminEndpointDefinitions(), { definitions });
+}
+
 /* Active Jobs */
 export interface ActiveJobsResponse {
   activeJobIds: string[];

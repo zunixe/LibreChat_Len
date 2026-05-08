@@ -387,6 +387,7 @@ export const adminRoleModelAccess = (name: string) =>
   `${adminRoles()}/${encodeURIComponent(name)}/model-access`;
 export const adminRoleRename = (name: string) =>
   `${adminRoles()}/${encodeURIComponent(name)}/rename`;
+export const adminEndpointDefinitions = () => `${adminRoot}/endpoint-definitions`;
 export const updateRoleAtomic = (roleName: string) => `${getRole(roleName)}`;
 
 

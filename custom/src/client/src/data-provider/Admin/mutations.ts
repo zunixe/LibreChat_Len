@@ -1,10 +1,14 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dataService, MutationKeys, QueryKeys } from 'librechat-data-provider';
 import type {
   UseMutationResult,
   UseMutationOptions,
+  UseQueryResult,
+  UseQueryOptions,
 } from '@tanstack/react-query';
 import type * as t from 'librechat-data-provider';
+
+type EndpointDefinition = t.EndpointDefinition;
 
 export const useCreateAdminUserMutation = (
   options?: UseMutationOptions<t.AdminUser, Error, t.AdminCreateUserPayload>,
@@ -185,6 +189,43 @@ export const useRenameRoleMutation = (
       ...options,
       onSuccess: (data, variables, context) => {
         queryClient.invalidateQueries([QueryKeys.adminRoles]);
+        options?.onSuccess?.(data, variables, context);
+      },
+    },
+  );
+};
+
+export const useEndpointDefinitionsQuery = (
+  config?: UseQueryOptions<EndpointDefinition[], Error>,
+): UseQueryResult<EndpointDefinition[], Error> => {
+  return useQuery(
+    [QueryKeys.endpointDefinitions],
+    () => dataService.getEndpointDefinitions(),
+    {
+      staleTime: 1000 * 60 * 5,
+      ...config,
+    },
+  );
+};
+
+export const useUpdateEndpointDefinitionsMutation = (
+  options?: UseMutationOptions<
+    EndpointDefinition[],
+    Error,
+    EndpointDefinition[]
+  >,
+): UseMutationResult<
+  EndpointDefinition[],
+  Error,
+  EndpointDefinition[]
+> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    (definitions) => dataService.updateEndpointDefinitions(definitions),
+    {
+      mutationKey: [MutationKeys.updateEndpointDefinitions],
+      onSuccess: (data, variables, context) => {
+        queryClient.invalidateQueries([QueryKeys.endpointDefinitions]);
         options?.onSuccess?.(data, variables, context);
       },
     },

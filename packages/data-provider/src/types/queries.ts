@@ -281,3 +281,9 @@ export type AdminCreateRolePayload = {
   name: string;
   basePermissionsFrom: 'USER' | 'ADMIN';
 };
+
+export type EndpointDefinition = {
+  endpoint: string;
+  models: string[];
+  order: number;
+};
