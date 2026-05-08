@@ -209,9 +209,7 @@ export type GraphTokenResponse = {
 
 /* Admin */
 export type ModelAccess = {
-  allowedEndpoints: string[] | null;
-  allowedModels: string[] | null;
-  description: string;
+  endpointAccess: EndpointAccess[];
 };
 
 export type AdminUser = {
@@ -242,11 +240,16 @@ export type AdminUserListParams = {
   role?: string;
 };
 
+export type EndpointAccess = {
+  endpoint: string;
+  models: string[];
+  showMCP: boolean;
+};
+
 export type AdminRole = {
   name: string;
   permissions: Record<string, Record<string, boolean>>;
-  allowedEndpoints?: string[];
-  allowedModels?: string[];
+  endpointAccess?: EndpointAccess[];
 };
 
 export type AdminRolesResponse = AdminRole[];

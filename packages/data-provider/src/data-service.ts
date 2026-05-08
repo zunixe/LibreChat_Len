@@ -1130,7 +1130,7 @@ export function updateRolePermissions(
 
 export function updateRoleModelAccess(
   roleName: string,
-  payload: { allowedEndpoints?: string[]; allowedModels?: string[] },
+  payload: { endpointAccess: q.EndpointAccess[] },
 ): Promise<q.AdminRole> {
   return request.put(endpoints.adminRoleModelAccess(roleName), payload);
 }

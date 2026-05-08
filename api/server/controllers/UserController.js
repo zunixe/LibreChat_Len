@@ -41,10 +41,23 @@ const getUserController = async (req, res) => {
     const db = require('mongoose').connection.db;
     const modelRole = await db.collection('modelRoles').findOne({ role: userData.role });
     if (modelRole) {
-      userData.modelAccess = {
-        allowedEndpoints: modelRole.allowedEndpoints || null,
-        allowedModels: modelRole.allowedModels || null,
-      };
+      if (modelRole.endpoints && Array.isArray(modelRole.endpoints)) {
+        userData.modelAccess = {
+          endpointAccess: modelRole.endpoints,
+        };
+      } else {
+        const endpointAccess = [];
+        const eps = modelRole.allowedEndpoints || [];
+        const models = modelRole.allowedModels || [];
+        for (const ep of eps) {
+          endpointAccess.push({
+            endpoint: ep,
+            models: models,
+            showMCP: ep === 'LEN-AI General',
+          });
+        }
+        userData.modelAccess = { endpointAccess };
+      }
     } else {
       userData.modelAccess = null;
     }

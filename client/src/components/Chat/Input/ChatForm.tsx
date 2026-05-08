@@ -3,6 +3,7 @@ import { useWatch } from 'react-hook-form';
 import { TextareaAutosize } from '@librechat/client';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { Constants, isAssistantsEndpoint, isAgentsEndpoint } from 'librechat-data-provider';
+import { useAuthContext } from '~/hooks/AuthContext';
 import {
   useChatContext,
   useChatFormContext,
@@ -85,10 +86,16 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     () => conversation?.endpointType ?? conversation?.endpoint,
     [conversation?.endpointType, conversation?.endpoint],
   );
-  const mcpEnabled = useMemo(
-    () => conversation?.endpoint === 'LEN-AI General',
-    [conversation?.endpoint],
-  );
+  const { user } = useAuthContext();
+  const mcpEnabled = useMemo(() => {
+    const ep = conversation?.endpoint;
+    if (!ep || !user?.modelAccess?.endpointAccess) {
+      return false;
+    }
+    return user.modelAccess.endpointAccess.some(
+      (access) => access.endpoint === ep && access.showMCP,
+    );
+  }, [conversation?.endpoint, user?.modelAccess?.endpointAccess]);
   const conversationId = useMemo(
     () => conversation?.conversationId ?? Constants.NEW_CONVO,
     [conversation?.conversationId],

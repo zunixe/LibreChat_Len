@@ -19,10 +19,21 @@ async function getModelRolesMap() {
     const roles = await db.collection('modelRoles').find({}).toArray();
     const roleMap = {};
     for (const r of roles) {
-      roleMap[r.role] = {
-        allowedEndpoints: r.allowedEndpoints || [],
-        allowedModels: r.allowedModels || [],
-      };
+      if (r.endpoints && Array.isArray(r.endpoints)) {
+        roleMap[r.role] = r.endpoints;
+      } else {
+        const endpointAccess = [];
+        const eps = r.allowedEndpoints || [];
+        const models = r.allowedModels || [];
+        for (const ep of eps) {
+          endpointAccess.push({
+            endpoint: ep,
+            models: models,
+            showMCP: ep === 'LEN-AI General',
+          });
+        }
+        roleMap[r.role] = endpointAccess;
+      }
     }
     return roleMap;
   } catch (err) {
@@ -42,8 +53,7 @@ router.get('/', requireAdminAccess, async (req, res) => {
       roles.map((r) => ({
         name: r.name,
         permissions: r.permissions ?? {},
-        allowedEndpoints: modelRolesMap[r.name]?.allowedEndpoints ?? [],
-        allowedModels: modelRolesMap[r.name]?.allowedModels ?? [],
+        endpointAccess: modelRolesMap[r.name] ?? [],
       })),
     );
   } catch (error) {
@@ -67,11 +77,10 @@ router.post('/', requireAdminAccess, async (req, res) => {
     }
     const baseRole = basePermissionsFrom ? await getRoleByName(basePermissionsFrom) : null;
     const basePerms = baseRole?.permissions ?? {};
-    const role = await createRole({
-      name: normalizedName,
-      permissions: JSON.parse(JSON.stringify(basePerms)),
-    });
-    res.status(201).json({ name: role.name, permissions: role.permissions ?? {} });
+    const permissions = JSON.parse(JSON.stringify(basePerms));
+    const db = mongoose.connection.db;
+    await db.collection('roles').insertOne({ name: normalizedName, permissions });
+    res.status(201).json({ name: normalizedName, permissions });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -101,26 +110,20 @@ router.put('/:name/model-access', requireAdminAccess, async (req, res) => {
     if (!existing) {
       return res.status(404).json({ message: 'Role not found' });
     }
-    const { allowedEndpoints, allowedModels } = req.body;
+    const { endpointAccess } = req.body;
+    if (!Array.isArray(endpointAccess)) {
+      return res.status(400).json({ message: 'endpointAccess must be an array' });
+    }
     const db = mongoose.connection.db;
-    const update = {};
-    if (allowedEndpoints !== undefined) {
-      update.allowedEndpoints = allowedEndpoints;
-    }
-    if (allowedModels !== undefined) {
-      update.allowedModels = allowedModels;
-    }
     await db.collection('modelRoles').updateOne(
       { role: normalizedName },
-      { $set: update },
+      { $set: { endpoints: endpointAccess } },
       { upsert: true },
     );
     const modelRolesMap = await getModelRolesMap();
-    const modelRole = modelRolesMap[normalizedName] || {};
     res.status(200).json({
       name: normalizedName,
-      allowedEndpoints: modelRole.allowedEndpoints ?? [],
-      allowedModels: modelRole.allowedModels ?? [],
+      endpointAccess: modelRolesMap[normalizedName] ?? [],
     });
   } catch (error) {
     res.status(400).json({ message: error.message });

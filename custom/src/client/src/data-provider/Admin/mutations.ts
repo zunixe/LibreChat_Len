@@ -143,17 +143,17 @@ export const useUpdateRoleModelAccessMutation = (
   options?: UseMutationOptions<
     t.AdminRole,
     Error,
-    { roleName: string; allowedEndpoints?: string[]; allowedModels?: string[] }
+    { roleName: string; endpointAccess: t.EndpointAccess[] }
   >,
 ): UseMutationResult<
   t.AdminRole,
   Error,
-  { roleName: string; allowedEndpoints?: string[]; allowedModels?: string[] }
+  { roleName: string; endpointAccess: t.EndpointAccess[] }
 > => {
   const queryClient = useQueryClient();
   return useMutation(
-    ({ roleName, allowedEndpoints, allowedModels }) =>
-      dataService.updateRoleModelAccess(roleName, { allowedEndpoints, allowedModels }),
+    ({ roleName, endpointAccess }) =>
+      dataService.updateRoleModelAccess(roleName, { endpointAccess }),
     {
       mutationKey: [MutationKeys.updateRoleModelAccess],
       ...options,
