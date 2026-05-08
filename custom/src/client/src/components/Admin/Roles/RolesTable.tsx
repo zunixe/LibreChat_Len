@@ -15,7 +15,6 @@ import {
   Button,
   Input,
 } from '@librechat/client';
-import RolePermissionsMatrix from './RolePermissionsMatrix';
 import RoleModelAccess from './RoleModelAccess';
 
 export default function RolesTable() {
@@ -106,16 +105,10 @@ export default function RolesTable() {
 
       {selectedRoleData && (
         <div className="mt-4 rounded border border-gray-200 bg-white p-4 shadow-sm">
-          <RolePermissionsMatrix
+          <RoleModelAccess
             roleName={selectedRoleData.name}
-            initialPermissions={selectedRoleData.permissions}
+            initialEndpointAccess={selectedRoleData.endpointAccess ?? []}
           />
-          <div className="mt-6">
-            <RoleModelAccess
-              roleName={selectedRoleData.name}
-              initialEndpointAccess={selectedRoleData.endpointAccess ?? []}
-            />
-          </div>
         </div>
       )}
     </div>
