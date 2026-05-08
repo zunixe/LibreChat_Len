@@ -138,3 +138,29 @@ export const useUpdateRolePermissionsMutation = (
     },
   );
 };
+
+export const useUpdateRoleModelAccessMutation = (
+  options?: UseMutationOptions<
+    t.AdminRole,
+    Error,
+    { roleName: string; allowedEndpoints?: string[]; allowedModels?: string[] }
+  >,
+): UseMutationResult<
+  t.AdminRole,
+  Error,
+  { roleName: string; allowedEndpoints?: string[]; allowedModels?: string[] }
+> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ roleName, allowedEndpoints, allowedModels }) =>
+      dataService.updateRoleModelAccess(roleName, { allowedEndpoints, allowedModels }),
+    {
+      mutationKey: [MutationKeys.updateRoleModelAccess],
+      ...options,
+      onSuccess: (data, variables, context) => {
+        queryClient.invalidateQueries([QueryKeys.adminRoles]);
+        options?.onSuccess?.(data, variables, context);
+      },
+    },
+  );
+};

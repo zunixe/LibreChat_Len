@@ -1581,5 +1581,6 @@
   "com_admin_new_role_placeholder": "New role name...",
   "com_admin_role_name": "Role Name",
   "com_admin_permissions_for": "Permissions for {{role}}",
+  "com_admin_model_access_for": "Model Access for {{role}}",
   "com_admin_hide": "Hide"
 }

@@ -383,6 +383,8 @@ export const adminUserResetPassword = (id: string) =>
   `${adminRoot}/users/${encodeURIComponent(id)}/reset-password`;
 export const adminRoles = () => `${adminRoot}/roles`;
 export const adminRole = (name: string) => `${adminRoles()}/${encodeURIComponent(name)}`;
+export const adminRoleModelAccess = (name: string) =>
+  `${adminRoles()}/${encodeURIComponent(name)}/model-access`;
 export const updateRoleAtomic = (roleName: string) => `${getRole(roleName)}`;
 
 

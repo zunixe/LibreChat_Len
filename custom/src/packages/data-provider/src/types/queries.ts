@@ -245,6 +245,8 @@ export type AdminUserListParams = {
 export type AdminRole = {
   name: string;
   permissions: Record<string, Record<string, boolean>>;
+  allowedEndpoints?: string[];
+  allowedModels?: string[];
 };
 
 export type AdminRolesResponse = AdminRole[];

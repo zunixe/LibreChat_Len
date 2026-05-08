@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { SystemRoles } = require('librechat-data-provider');
 const { SystemCapabilities } = require('@librechat/data-schemas');
 const { requireCapability } = require('~/server/middleware/roles/capabilities');
@@ -12,6 +13,23 @@ const {
   countUsers,
 } = require('~/models');
 
+async function getModelRolesMap() {
+  try {
+    const db = mongoose.connection.db;
+    const roles = await db.collection('modelRoles').find({}).toArray();
+    const roleMap = {};
+    for (const r of roles) {
+      roleMap[r.role] = {
+        allowedEndpoints: r.allowedEndpoints || [],
+        allowedModels: r.allowedModels || [],
+      };
+    }
+    return roleMap;
+  } catch (err) {
+    return {};
+  }
+}
+
 const router = express.Router();
 router.use(requireJwtAuth);
 const requireAdminAccess = requireCapability(SystemCapabilities.ACCESS_ADMIN);
@@ -19,7 +37,15 @@ const requireAdminAccess = requireCapability(SystemCapabilities.ACCESS_ADMIN);
 router.get('/', requireAdminAccess, async (req, res) => {
   try {
     const roles = await listRoles();
-    res.status(200).json(roles.map((r) => ({ name: r.name, permissions: r.permissions ?? {} })));
+    const modelRolesMap = await getModelRolesMap();
+    res.status(200).json(
+      roles.map((r) => ({
+        name: r.name,
+        permissions: r.permissions ?? {},
+        allowedEndpoints: modelRolesMap[r.name]?.allowedEndpoints ?? [],
+        allowedModels: modelRolesMap[r.name]?.allowedModels ?? [],
+      })),
+    );
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -63,6 +89,39 @@ router.put('/:name/permissions', requireAdminAccess, async (req, res) => {
       return res.status(400).json({ message: 'Failed to update role' });
     }
     res.status(200).json({ name: updated.name, permissions: updated.permissions ?? {} });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.put('/:name/model-access', requireAdminAccess, async (req, res) => {
+  try {
+    const normalizedName = req.params.name.toUpperCase().trim();
+    const existing = await getRoleByName(normalizedName);
+    if (!existing) {
+      return res.status(404).json({ message: 'Role not found' });
+    }
+    const { allowedEndpoints, allowedModels } = req.body;
+    const db = mongoose.connection.db;
+    const update = {};
+    if (allowedEndpoints !== undefined) {
+      update.allowedEndpoints = allowedEndpoints;
+    }
+    if (allowedModels !== undefined) {
+      update.allowedModels = allowedModels;
+    }
+    await db.collection('modelRoles').updateOne(
+      { role: normalizedName },
+      { $set: update },
+      { upsert: true },
+    );
+    const modelRolesMap = await getModelRolesMap();
+    const modelRole = modelRolesMap[normalizedName] || {};
+    res.status(200).json({
+      name: normalizedName,
+      allowedEndpoints: modelRole.allowedEndpoints ?? [],
+      allowedModels: modelRole.allowedModels ?? [],
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

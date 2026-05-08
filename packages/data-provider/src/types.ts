@@ -12,6 +12,7 @@ import type { SettingDefinition } from './generate';
 import type { TMinimalFeedback } from './feedback';
 import type { ContentTypes } from './types/runs';
 import type { Agent } from './types/assistants';
+import type { ModelAccess } from './types/queries';
 
 export * from './schemas';
 
@@ -191,11 +192,6 @@ export type TBackupCode = {
   codeHash: string;
   used: boolean;
   usedAt: Date | null;
-};
-
-export type ModelAccess = {
-  allowedEndpoints: string[] | null;
-  allowedModels: string[] | null;
 };
 
 export type TUser = {

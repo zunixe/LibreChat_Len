@@ -1128,6 +1128,13 @@ export function updateRolePermissions(
   return request.put(endpoints.updateRoleAtomic(roleName), { permissions: payload });
 }
 
+export function updateRoleModelAccess(
+  roleName: string,
+  payload: { allowedEndpoints?: string[]; allowedModels?: string[] },
+): Promise<q.AdminRole> {
+  return request.put(endpoints.adminRoleModelAccess(roleName), payload);
+}
+
 /* Active Jobs */
 export interface ActiveJobsResponse {
   activeJobIds: string[];

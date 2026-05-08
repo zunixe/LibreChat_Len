@@ -16,6 +16,7 @@ import {
   Input,
 } from '@librechat/client';
 import RolePermissionsMatrix from './RolePermissionsMatrix';
+import RoleModelAccess from './RoleModelAccess';
 
 export default function RolesTable() {
   const localize = useLocalize();
@@ -68,6 +69,8 @@ export default function RolesTable() {
           <TableHeader>
             <TableRow>
               <TableHead>{localize('com_admin_role_name')}</TableHead>
+              <TableHead>Endpoints</TableHead>
+              <TableHead>Models</TableHead>
               <TableHead>{localize('com_admin_actions')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -75,6 +78,22 @@ export default function RolesTable() {
             {roles.map((role) => (
               <TableRow key={role.name}>
                 <TableCell>{role.name}</TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {(role.allowedEndpoints ?? []).map((ep) => (
+                      <span key={ep} className="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-800">{ep}</span>
+                    ))}
+                    {!role.allowedEndpoints?.length && <span className="text-xs text-gray-400">—</span>}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {(role.allowedModels ?? []).map((m) => (
+                      <span key={m} className="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">{m}</span>
+                    ))}
+                    {!role.allowedModels?.length && <span className="text-xs text-gray-400">—</span>}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
@@ -109,6 +128,13 @@ export default function RolesTable() {
             roleName={selectedRoleData.name}
             initialPermissions={selectedRoleData.permissions}
           />
+          <div className="mt-6">
+            <RoleModelAccess
+              roleName={selectedRoleData.name}
+              initialAllowedEndpoints={selectedRoleData.allowedEndpoints ?? []}
+              initialAllowedModels={selectedRoleData.allowedModels ?? []}
+            />
+          </div>
         </div>
       )}
     </div>

@@ -104,6 +104,7 @@ export enum MutationKeys {
   createAdminRole = 'createAdminRole',
   deleteAdminRole = 'deleteAdminRole',
   updateRolePermissions = 'updateRolePermissions',
+  updateRoleModelAccess = 'updateRoleModelAccess',
 }
 
 // Dynamic query keys that require parameters
